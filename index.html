@@ -3,49 +3,47 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Simulador de Impacto — Detalhado</title>
-
+  <title>Simulador NEO — NASA</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="wrap">
     <aside class="panel" aria-label="Controles">
-      <h1>Simulador de Impacto</h1>
-      <p class="small">Escolha um asteroide e clique no mapa. Ao escolher o local, aparecerá a opção de lançar.</p>
+      <h1>Simulador NEO (NASA)</h1>
+      <p class="small">Carregue NEOs da NASA (feed), selecione um e clique no mapa. Exibe distância de aproximação e risco de colisão.</p>
 
-      <label class="field">
-        Tipo
-        <select id="asteroidType" aria-label="Tipo de asteroide">
-          <option value="custom" data-d="50" data-v="20" data-den="3000">Personalizado</option>
-          <option value="c-type" data-d="30" data-v="12" data-den="2500">C-type (carbonáceo)</option>
-          <option value="s-type" data-d="80" data-v="18" data-den="3300">S-type (rochoso)</option>
-          <option value="m-type" data-d="150" data-v="20" data-den="7800">M-type (metálico)</option>
-          <option value="bolide" data-d="500" data-v="25" data-den="3500">Bolide grande</option>
-        </select>
+      <label class="field">NASA API Key
+        <input id="apiKey" type="text" value="DEMO_KEY" />
       </label>
 
-      <label class="field">
-        Diâmetro (m)
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <button id="fetchNeos">Buscar NEOs (feed)</button>
+        <button id="refresh" class="secondary">Atualizar</button>
+      </div>
+
+      <label class="field">Asteroide (NEO)
+        <select id="asteroidType"><option value="custom">Personalizado</option></select>
+      </label>
+
+      <label class="field">Diâmetro (m)
         <div class="pair">
-          <input id="diameter" type="range" min="1" max="2000" value="50" />
-          <input id="diameterNum" type="number" min="1" max="2000" value="50" />
+          <input id="diameter" type="range" min="1" max="20000" value="50" />
+          <input id="diameterNum" type="number" min="1" max="20000" value="50" />
         </div>
       </label>
 
-      <label class="field">
-        Velocidade (km/s)
+      <label class="field">Velocidade (km/s)
         <div class="pair">
-          <input id="velocity" type="range" min="5" max="70" value="20" step="0.5" />
-          <input id="velocityNum" type="number" min="5" max="70" value="20" step="0.1" />
+          <input id="velocity" type="range" min="0.1" max="100" value="20" step="0.1" />
+          <input id="velocityNum" type="number" min="0.1" max="100" value="20" step="0.1" />
         </div>
       </label>
 
-      <label class="field">
-        Densidade (kg/m³)
+      <label class="field">Densidade (kg/m³)
         <div class="pair">
-          <input id="density" type="range" min="1000" max="8000" value="3000" />
-          <input id="densityNum" type="number" min="1000" max="8000" value="3000" />
+          <input id="density" type="range" min="500" max="8000" value="3000" />
+          <input id="densityNum" type="number" min="500" max="8000" value="3000" />
         </div>
       </label>
 
@@ -54,17 +52,15 @@
         <button id="center" class="secondary">Centralizar</button>
       </div>
 
-      <div class="help" id="help">Selecione "Personalizado" para editar valores.</div>
+      <div class="help" id="help">Pressione "Buscar NEOs" para carregar objetos públicos da NASA.</div>
 
       <div class="summary" id="summary" aria-live="polite">
         <strong>Resumo</strong>
-        <div class="summary-line">Clique no mapa para escolher o ponto de impacto.</div>
+        <div class="summary-line">Nenhum evento. Carregue NEOs e selecione um.</div>
       </div>
 
       <h2 class="log-title">Registro</h2>
-      <div id="logList" class="log">
-        <div class="log-item">Sem impactos ainda.</div>
-      </div>
+      <div id="logList" class="log"><div class="log-item">Sem impactos ainda.</div></div>
     </aside>
 
     <main id="map" role="application" aria-label="Mapa interativo"></main>
