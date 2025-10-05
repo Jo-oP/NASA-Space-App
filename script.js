@@ -1,4 +1,4 @@
-// STORAGE_KEY alterado para nova versão
+// STORAGE
 const STORAGE_KEY = 'meteor_sim_detailed_v1';
 
 // mapa
@@ -75,13 +75,71 @@ function applyValuesFromOption(opt){
   velocity.value = v; velocityNum.value = v;
   density.value = den; densityNum.value = den;
   updateInputsState();
+
+  // mostrar informação adicional quando opção vier da NASA
+  const miss = opt.dataset.miss ? Number(opt.dataset.miss) : null;
+  const hazard = opt.dataset.hazard === 'true';
+  if(miss){
+    help.textContent = `Distância de aproximação ≈ ${Math.round(miss).toLocaleString()} km — ${hazard ? 'Potencialmente perigoso' : 'Sem risco significativo'}`;
+  } else {
+    help.textContent = asteroidType.value === 'custom' ? 'Modo PERSONALIZADO: edite valores.' : 'Dados do objeto sem aproximação disponível.';
+  }
 }
 function updateInputsState(){
   const editable = asteroidType.value === 'custom';
   [diameter, velocity, density, diameterNum, velocityNum, densityNum].forEach(el => el.disabled = !editable);
-  help.textContent = editable ? 'Modo PERSONALIZADO: edite valores.' : 'Modo FIXO: selecione outro tipo ou escolha "Personalizado".';
+  if(editable) help.textContent = 'Modo PERSONALIZADO: edite valores.';
 }
 asteroidType.addEventListener('change', e => { applyValuesFromOption(e.target.selectedOptions[0]); });
+
+// --- NOVO: carregar NEOs da API da NASA e popular select ---
+async function loadNasaNeos(){
+  const API = 'https://api.nasa.gov/neo/rest/v1/feed?api_key=DEMO_KEY';
+  try{
+    const res = await fetch(API);
+    const data = await res.json();
+    const objs = [];
+    Object.values(data.near_earth_objects || {}).forEach(arr => {
+      arr.forEach(n => {
+        const ca = (n.close_approach_data && n.close_approach_data[0]) || null;
+        const estDia = (n.estimated_diameter && n.estimated_diameter.meters)
+          ? (n.estimated_diameter.meters.estimated_diameter_min + n.estimated_diameter.meters.estimated_diameter_max) / 2
+          : 50;
+        const v = ca ? Number(ca.relative_velocity.kilometers_per_second) : 20;
+        const miss = ca ? Number(ca.miss_distance.kilometers) : null;
+        const hazard = !!n.is_potentially_hazardous_asteroid;
+        objs.push({id: n.id, name: n.name, estDia, v, miss, hazard});
+      });
+    });
+    // dedupe por id
+    const seen = new Set();
+    const unique = objs.filter(o => { if(seen.has(o.id)) return false; seen.add(o.id); return true; });
+
+    // manter a opção "custom" no topo
+    const customOpt = asteroidType.querySelector('option[value="custom"]');
+    asteroidType.innerHTML = '';
+    if(customOpt) asteroidType.appendChild(customOpt);
+
+    unique.slice(0,80).forEach(o => {
+      const opt = document.createElement('option');
+      opt.value = `neo-${o.id}`;
+      opt.textContent = `${o.name} — ${o.miss ? Math.round(o.miss).toLocaleString() + ' km' : 'dist. desconhecida'} — ${o.hazard ? 'Risco' : 'Seguro'}`;
+      opt.dataset.d = Math.round(o.estDia);
+      opt.dataset.v = Number(o.v).toFixed(2);
+      opt.dataset.den = o.hazard ? 3000 : 2500; // heurística para densidade
+      if(o.miss) opt.dataset.miss = Math.round(o.miss);
+      opt.dataset.hazard = o.hazard;
+      asteroidType.appendChild(opt);
+    });
+
+    // manter seleção inicial em custom
+    applyValuesFromOption(asteroidType.selectedOptions[0]);
+  }catch(err){
+    console.error('Falha ao carregar NEOs da NASA', err);
+    help.textContent = 'Não foi possível carregar NEOs da NASA. Usando valores locais.';
+  }
+}
+// --- fim do novo ---
 
 // logs
 function saveLogs(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(logs)); }catch{} }
@@ -120,7 +178,7 @@ function animateFallAndExplode(destLatLng, est, meta){
     if(i >= steps){
       clearInterval(fallInterval);
       effects.removeLayer(fallingMarker);
-      // explosão animada: expand circle then devastation fill
+      // explosão animada: expand circle então devastação
       const explosion = L.circle(destLatLng, {radius:10, color:'#ffb86b', weight:2, fillColor:'#ffb86b', fillOpacity:0.35}).addTo(effects);
       let exStep = 0, exMax = 30;
       const exInterval = setInterval(()=>{
@@ -161,12 +219,19 @@ map.on('click', e => {
   const container = document.createElement('div');
   container.className = 'impact-popup';
   const info = document.createElement('div'); info.style.fontSize='13px';
-  info.innerHTML = `<strong>${d} m • ${v} km/s</strong><br/>Cratera ≈ ${Math.round(est.crater)} m • Energia: ${energyReadable}`;
+
+  // tentar obter dados NASA da opção selecionada
+  const sel = asteroidType.selectedOptions[0];
+  const miss = sel.dataset.miss ? Number(sel.dataset.miss) : null;
+  const hazard = sel.dataset.hazard === 'true';
+  const missText = miss ? `${Math.round(miss).toLocaleString()} km` : 'dist. desconhecida';
+  info.innerHTML = `<strong>${sel.textContent}</strong><br/>${d} m • ${v} km/s<br/>Cratera ≈ ${Math.round(est.crater)} m • Energia: ${energyReadable}<br/>Aproximação: ${missText} • ${hazard ? 'Potencialmente perigoso' : 'Sem risco'}`;
+
   const btnDetails = document.createElement('button'); btnDetails.className='impact-btn'; btnDetails.textContent='Ver detalhes';
   const btnLaunch = document.createElement('button'); btnLaunch.className='launch-btn'; btnLaunch.textContent='Lançar Meteoro';
   container.appendChild(info); container.appendChild(btnDetails); container.appendChild(btnLaunch);
 
-  const popup = L.popup({maxWidth:320}).setLatLng(e.latlng).setContent(container).openOn(map);
+  const popup = L.popup({maxWidth:420}).setLatLng(e.latlng).setContent(container).openOn(map);
 
   btnDetails.addEventListener('click', () => {
     // preencher painel summary com dados detalhados
@@ -178,6 +243,8 @@ map.on('click', e => {
         <tr><td>Profundidade aproximada</td><td>${Math.round(est.depth)} m</td></tr>
         <tr><td>Raio da área devastada (visual)</td><td>${Math.round(est.devastRadius)} m</td></tr>
         <tr><td>Nível de dano</td><td>${dmg.label} — ${dmg.text}</td></tr>
+        <tr><td>Aproximação</td><td>${miss ? Math.round(miss).toLocaleString() + ' km' : 'desconhecida'}</td></tr>
+        <tr><td>Risco de colisão</td><td>${hazard ? 'Potencialmente perigoso' : 'Sem risco significativo'}</td></tr>
       </table>
       <div class="summary-line">Para ver a destruição no mapa, clique em "Lançar Meteoro".</div>`;
   });
@@ -200,3 +267,4 @@ centerBtn.addEventListener('click', ()=> map.setView([0,0],2));
 applyValuesFromOption(asteroidType.selectedOptions[0]);
 updateInputsState();
 loadLogs();
+loadNasaNeos();
