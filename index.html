@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Simulador de Impacto — Detalhado</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="wrap">
+    <aside class="panel" aria-label="Controles">
+      <h1>Simulador de Impacto</h1>
+      <p class="small">Escolha um asteroide e clique no mapa. Ao escolher o local, aparecerá a opção de lançar.</p>
+
+      <label class="field">
+        Tipo
+        <select id="asteroidType" aria-label="Tipo de asteroide">
+          <option value="custom" data-d="50" data-v="20" data-den="3000">Personalizado</option>
+          <option value="c-type" data-d="30" data-v="12" data-den="2500">C-type (carbonáceo)</option>
+          <option value="s-type" data-d="80" data-v="18" data-den="3300">S-type (rochoso)</option>
+          <option value="m-type" data-d="150" data-v="20" data-den="7800">M-type (metálico)</option>
+          <option value="bolide" data-d="500" data-v="25" data-den="3500">Bolide grande</option>
+        </select>
+      </label>
+
+      <label class="field">
+        Diâmetro (m)
+        <div class="pair">
+          <input id="diameter" type="range" min="1" max="2000" value="50" />
+          <input id="diameterNum" type="number" min="1" max="2000" value="50" />
+        </div>
+      </label>
+
+      <label class="field">
+        Velocidade (km/s)
+        <div class="pair">
+          <input id="velocity" type="range" min="5" max="70" value="20" step="0.5" />
+          <input id="velocityNum" type="number" min="5" max="70" value="20" step="0.1" />
+        </div>
+      </label>
+
+      <label class="field">
+        Densidade (kg/m³)
+        <div class="pair">
+          <input id="density" type="range" min="1000" max="8000" value="3000" />
+          <input id="densityNum" type="number" min="1000" max="8000" value="3000" />
+        </div>
+      </label>
+
+      <div class="buttons">
+        <button id="clear">Limpar</button>
+        <button id="center" class="secondary">Centralizar</button>
+      </div>
+
+      <div class="help" id="help">Selecione "Personalizado" para editar valores.</div>
+
+      <div class="summary" id="summary" aria-live="polite">
+        <strong>Resumo</strong>
+        <div class="summary-line">Clique no mapa para escolher o ponto de impacto.</div>
+      </div>
+
+      <h2 class="log-title">Registro</h2>
+      <div id="logList" class="log">
+        <div class="log-item">Sem impactos ainda.</div>
+      </div>
+    </aside>
+
+    <main id="map" role="application" aria-label="Mapa interativo"></main>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

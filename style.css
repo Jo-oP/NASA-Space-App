@@ -1,0 +1,71 @@
+:root{
+  --panel-w:360px;
+  --bg:#fbfdff;
+  --panel:#ffffff;
+  --accent:#1e40af;
+  --muted:#6b7280;
+  --ok:#16a34a;
+  --warn:#f59e0b;
+  --danger:#ef4444;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;font-family:Inter,Segoe UI,Arial,Helvetica,sans-serif;background:var(--bg);color:#0f172a}
+.wrap{display:flex;height:100vh;gap:14px;padding:12px}
+.panel{
+  width:var(--panel-w);
+  padding:16px;
+  background:var(--panel);
+  border-radius:10px;
+  box-shadow:0 6px 20px rgba(15,23,42,0.06);
+  overflow:auto;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+h1{font-size:18px;margin:0;color:var(--accent)}
+.small{font-size:13px;color:var(--muted);margin:2px 0 12px}
+.field{margin:8px 0;font-size:14px}
+.field select, .field input[type=number]{width:100%;padding:10px;border-radius:8px;border:1px solid #e6eefc;background:#fff}
+.pair{display:flex;gap:8px;align-items:center}
+.pair input[type=range]{flex:1}
+.pair input[type=number]{width:88px;padding:8px;border-radius:8px;border:1px solid #e6eefc;background:#fff}
+.buttons{display:flex;gap:8px;margin-top:8px}
+button{
+  flex:1;padding:10px;border-radius:8px;border:0;cursor:pointer;
+  color:#fff;font-weight:700;background:linear-gradient(90deg,var(--accent),#4f46e5);
+}
+button.secondary{background:linear-gradient(90deg,#6b7280,#4b5563)}
+.help{margin-top:8px;font-size:13px;color:var(--muted);padding:8px;border-radius:8px;background:#f8fbff}
+
+/* summary: detalhado e claro */
+.summary{margin-top:8px;padding:10px;border-radius:8px;background:#fbfdff;border:1px solid #eef6ff}
+.summary strong{display:block;margin-bottom:6px}
+.summary-line{font-size:14px;color:#0b1220;margin:6px 0}
+.detail-table{font-size:13px;border-collapse:collapse;width:100%}
+.detail-table td{padding:4px 6px;border-bottom:1px dashed #eef6ff}
+
+/* log */
+.log{margin-top:6px;display:flex;flex-direction:column;gap:8px}
+.log-item{background:#fff;padding:10px;border-radius:8px;border:1px solid #eef6ff;font-size:13px}
+
+/* map area */
+#map{flex:1;border-radius:10px;overflow:hidden;box-shadow:0 6px 20px rgba(15,23,42,0.06);border:1px solid #e6eefc}
+
+/* popup buttons */
+.impact-popup {display:flex;gap:6px}
+.impact-popup button{padding:6px 8px;border-radius:6px;border:0;cursor:pointer;font-weight:700}
+.impact-btn{background:#1e40af;color:#fff}
+.launch-btn{background:#ef4444;color:#fff}
+
+/* animations */
+.meteor-icon{
+  width:22px;height:22px;border-radius:50%;background:linear-gradient(90deg,#ffb86b,#ff6b6b);box-shadow:0 0 12px rgba(255,107,107,0.6);
+  display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px
+}
+
+/* responsive */
+@media(max-width:900px){
+  .wrap{flex-direction:column;padding:8px}
+  .panel{width:100%;height:auto;border-radius:8px}
+  #map{height:60vh;border-radius:8px}
+}
